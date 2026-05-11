@@ -8,7 +8,7 @@ A daily shortlist of 10 undervalued Indian stocks with strong future potential, 
 
 ## How to use this
 - Browse the picks below by date
-- Each report scores stocks on: **Growth** (revenue CAGR, EPS) · **Quality** (margins, FCF) · **Valuation** (P/E vs. history, PEG ratio)
+- Each report scores stocks on: **Growth** (revenue CAGR, EPS) · **Quality** (margins, FCF, ROCE) · **Valuation** (P/E vs. history, PEG ratio)
 - Conviction levels: HIGH · MEDIUM · SPECULATIVE
 - Exchanges covered: NSE · BSE
 
@@ -16,7 +16,9 @@ A daily shortlist of 10 undervalued Indian stocks with strong future potential, 
 
 ## Latest Picks
 
-*Picks will appear here daily — check back tomorrow morning!*
+| Date | Link |
+|------|------|
+| [2026-05-10](picks/2026-05-10.md) | Today's picks |
 
 ---
 
