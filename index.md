@@ -17,7 +17,7 @@ A daily shortlist of 10 undervalued stocks ranked by growth, quality, and valuat
 
 | Date | Link |
 |------|------|
-| 2026-05-10 | [View picks](picks/2026-05-10.md) |
+| 2026-05-11 | [View picks](picks/2026-05-11.md) |
 
 ---
 
