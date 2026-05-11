@@ -1,0 +1,1 @@
+# daily-stock-pick-India
