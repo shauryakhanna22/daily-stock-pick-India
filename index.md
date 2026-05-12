@@ -29,4 +29,4 @@ A daily shortlist of 10 undervalued Indian stocks ranked by growth, quality, and
 
 | Date | Ticker | Company | Verdict | Full Analysis | Deck |
 |------|--------|---------|---------|---------------|------|
-| 2026-05-12 | COALINDIA | Coal India Limited | WATCH | [Read Analysis](deep-dives/COALINDIA-2026-05-12.md) | [Download Deck](deep-dives/CoalIndia-DeepDive-2026-05-12.pptx) |
+| 2026-05-12 | COALINDIA | Coal India Limited | WATCH | [Read Analysis](deep-dives/COALINDIA-2026-05-12.md) | [View Slides](deep-dives/COALINDIA-slideshow.html) · [Download Deck](deep-dives/CoalIndia-DeepDive-2026-05-12.pptx) |
