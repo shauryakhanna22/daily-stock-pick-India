@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COALINDIA — Investment Deep Dive</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy:   #1C2B5E;
+    --navyd:  #111A3E;
+    --blue:   #2D5BE3;
+    --amber:  #D97706;
+    --green:  #059669;
+    --red:    #DC2626;
+    --mute:   #64748B;
+    --mid:    #334155;
+    --dark:   #0F172A;
+    --lgray:  #E2E8F0;
+    --ice:    #D6E4FF;
+    --lightbg:#F0F4FF;
+    --white:  #FFFFFF;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    background: var(--lightbg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--dark);
+    padding-bottom: 40px;
+  }
+
+  /* ── STICKY HEADER ── */
+  .top-bar {
+    position: sticky; top: 0; z-index: 200;
+    background: var(--navyd);
+    border-bottom: 3px solid var(--amber);
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .top-bar .left .ticker { font-size: 20px; font-weight: 800; color: #fff; }
+  .top-bar .left .name   { font-size: 11px; color: var(--ice); margin-top: 1px; }
+  .top-bar .right {
+    background: var(--amber); color: #fff;
+    font-size: 13px; font-weight: 700;
+    padding: 6px 14px; border-radius: 20px; white-space: nowrap;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, var(--navyd) 0%, var(--navy) 100%);
+    padding: 28px 16px 24px;
+  }
+  .hero .date   { font-size: 11px; color: var(--mute); margin-bottom: 6px; }
+  .hero .sector { font-size: 12px; color: var(--ice); margin-bottom: 16px; }
+
+  .hero-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 20px;
+  }
+  .hstat {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .hstat .hl { font-size: 10px; color: var(--mute); margin-bottom: 4px; }
+  .hstat .hv { font-size: 22px; font-weight: 800; color: #fff; }
+  .hstat .hs { font-size: 10px; color: var(--ice); margin-top: 2px; }
+  .hstat.amber .hv { color: var(--amber); }
+  .hstat.green .hv { color: #34D399; }
+
+  .verdict-box {
+    background: rgba(217,119,6,0.15);
+    border: 1.5px solid var(--amber);
+    border-radius: 12px; padding: 16px;
+    font-size: 13px; color: #fff; line-height: 1.65;
+  }
+  .verdict-box strong { color: var(--amber); }
+
+  /* ── SECTION CARDS ── */
+  .section { margin: 14px 12px 0; }
+
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(28,43,94,0.08);
+    margin-bottom: 12px;
+  }
+
+  .card-header {
+    background: var(--navy);
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card-header .icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .card-header .htitle { font-size: 14px; font-weight: 700; color: #fff; }
+  .card-header .hsub   { font-size: 10px; color: var(--ice); margin-top: 1px; }
+
+  .card-body { padding: 16px; }
+
+  /* ── METRIC GRID ── */
+  .metric-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 14px;
+  }
+  .metric-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .metric-grid.four  { grid-template-columns: 1fr 1fr; }
+
+  .metric {
+    background: var(--lightbg);
+    border-radius: 10px; padding: 12px;
+    border-left: 3px solid var(--blue);
+  }
+  .metric.green  { border-color: var(--green); }
+  .metric.amber  { border-color: var(--amber); }
+  .metric.red    { border-color: var(--red); }
+  .metric.navy   { border-color: var(--navy); }
+
+  .metric .ml { font-size: 9.5px; color: var(--mute); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .metric .mv { font-size: 20px; font-weight: 800; color: var(--navy); }
+  .metric.green .mv { color: var(--green); }
+  .metric.amber .mv { color: var(--amber); }
+  .metric.red   .mv { color: var(--red); }
+  .metric .ms { font-size: 10px; color: var(--mute); margin-top: 3px; }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th {
+    background: var(--navy); color: #fff;
+    padding: 9px 10px; text-align: left; font-size: 11px;
+  }
+  .data-table th:not(:first-child) { text-align: center; }
+  .data-table td {
+    padding: 9px 10px; border-bottom: 1px solid var(--lgray);
+    color: var(--dark);
+  }
+  .data-table td:not(:first-child) { text-align: center; color: var(--mid); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:nth-child(even) td { background: var(--lightbg); }
+  .data-table td:first-child { font-weight: 600; color: var(--navy); }
+
+  /* ── FCF RATIO BARS ── */
+  .ratio-row {
+    display: flex; gap: 8px; margin-top: 14px;
+  }
+  .ratio-item {
+    flex: 1; background: var(--lightbg);
+    border-radius: 10px; padding: 10px 8px; text-align: center;
+    border-top: 3px solid var(--lgray);
+  }
+  .ratio-item.high   { border-color: var(--green); }
+  .ratio-item.mid2   { border-color: var(--amber); }
+  .ratio-item.low2   { border-color: var(--red); }
+  .ratio-item .ry { font-size: 9px; color: var(--mute); margin-bottom: 4px; }
+  .ratio-item .rv { font-size: 16px; font-weight: 800; }
+  .ratio-item.high .rv { color: var(--green); }
+  .ratio-item.mid2 .rv { color: var(--amber); }
+  .ratio-item.low2 .rv { color: var(--red); }
+
+  /* ── RISK ITEMS ── */
+  .risk-item {
+    border-radius: 10px; overflow: hidden;
+    margin-bottom: 10px; border: 1px solid var(--lgray);
+  }
+  .risk-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--lightbg);
+  }
+  .risk-title { font-size: 13px; font-weight: 700; color: var(--dark); flex: 1; }
+  .risk-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 12px; color: #fff;
+    margin-left: 8px; white-space: nowrap; flex-shrink: 0;
+  }
+  .risk-badge.HIGH   { background: var(--red); }
+  .risk-badge.MEDIUM { background: var(--amber); }
+  .risk-badge.LOW    { background: var(--green); }
+  .risk-desc {
+    padding: 10px 14px 12px;
+    font-size: 12.5px; color: var(--mid); line-height: 1.6;
+    background: #fff;
+  }
+
+  /* ── DCF SCENARIO CARDS ── */
+  .dcf-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px; margin-bottom: 16px;
+  }
+  .dcf-card {
+    border-radius: 12px; overflow: hidden;
+    border: 2px solid var(--lgray); text-align: center;
+  }
+  .dcf-card .dcf-top {
+    padding: 8px 6px;
+    font-size: 13px; font-weight: 800; color: #fff;
+  }
+  .dcf-card.bear .dcf-top { background: var(--red); }
+  .dcf-card.base .dcf-top { background: var(--amber); }
+  .dcf-card.bull .dcf-top { background: var(--green); }
+  .dcf-card.bear { border-color: var(--red); }
+  .dcf-card.base { border-color: var(--amber); }
+  .dcf-card.bull { border-color: var(--green); }
+  .dcf-card .dcf-body { padding: 10px 6px; background: #fff; }
+  .dcf-card .dcf-label { font-size: 8.5px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.3px; }
+  .dcf-card .dcf-val   { font-size: 14px; font-weight: 800; margin: 2px 0 8px; }
+  .dcf-card.bear .dcf-val { color: var(--red); }
+  .dcf-card.base .dcf-val { color: var(--amber); }
+  .dcf-card.bull .dcf-val { color: var(--green); }
+
+  /* ── ANALYST DONUT ── */
+  .analyst-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-top: 14px;
+  }
+  .analyst-stat {
+    background: var(--lightbg); border-radius: 10px;
+    padding: 12px; text-align: center;
+  }
+  .analyst-stat .as-val { font-size: 22px; font-weight: 800; }
+  .analyst-stat .as-lbl { font-size: 10px; color: var(--mute); margin-top: 2px; }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 0; border-bottom: 1px solid var(--lgray);
+    font-size: 13px; line-height: 1.5;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist .ci { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .checklist .ct { color: var(--dark); }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    border-radius: 10px; padding: 14px;
+    font-size: 12.5px; line-height: 1.65; margin-bottom: 12px;
+  }
+  .info-box.navy  { background: var(--navy); color: #fff; }
+  .info-box.amber { background: rgba(217,119,6,0.1); border: 1px solid var(--amber); color: var(--dark); }
+  .info-box.green { background: rgba(5,150,105,0.08); border: 1px solid var(--green); color: var(--dark); }
+  .info-box strong { color: var(--amber); }
+  .info-box.green strong { color: var(--green); }
+
+  /* ── QUOTE ── */
+  .quote-box {
+    background: var(--navy); border-radius: 12px;
+    padding: 16px; margin-bottom: 12px;
+    border-left: 4px solid var(--amber);
+  }
+  .quote-box .qt { font-size: 13px; color: #fff; line-height: 1.7; font-style: italic; }
+  .quote-box .qs { font-size: 11px; color: var(--amber); margin-top: 8px; }
+
+  /* ── CHART WRAPPER ── */
+  .chart-wrap { position: relative; margin: 6px 0 14px; }
+  .chart-title { font-size: 11px; color: var(--mute); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px; }
+
+  /* ── PILL ── */
+  .pill {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 12px; color: #fff; margin-right: 4px; margin-bottom: 4px;
+  }
+  .pill.buy    { background: var(--green); }
+  .pill.hold   { background: var(--amber); }
+  .pill.sell   { background: var(--red); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center; padding: 24px 16px 16px;
+    font-size: 10.5px; color: var(--mute); line-height: 1.6;
+  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--lgray); margin: 14px 0; }
+
+  p { font-size: 13px; color: var(--mid); line-height: 1.65; margin-bottom: 10px; }
+  p:last-child { margin-bottom: 0; }
+  h4 { font-size: 13px; color: var(--navy); font-weight: 700; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- STICKY HEADER -->
+<div class="top-bar">
+  <div class="left">
+    <div class="ticker">COALINDIA</div>
+    <div class="name">Coal India Limited · NSE · Energy / Mining</div>
+  </div>
+  <div class="right">WATCH ⚠</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="date">Investment Deep Dive · May 12, 2026</div>
+  <div class="sector">Large Cap · INR 2,874B · Maharatna PSU · Ministry of Coal</div>
+
+  <div class="hero-stats">
+    <div class="hstat amber">
+      <div class="hl">Current Price</div>
+      <div class="hv">INR 466</div>
+      <div class="hs">NSE Close</div>
+    </div>
+    <div class="hstat green">
+      <div class="hl">Dividend Yield</div>
+      <div class="hv">5.7%</div>
+      <div class="hs">INR 15.5/share FY2026</div>
+    </div>
+    <div class="hstat">
+      <div class="hl">Trailing P/E</div>
+      <div class="hv">9.2x</div>
+      <div class="hs">44% below sector avg</div>
+    </div>
+    <div class="hstat">
+      <div class="hl">ROCE</div>
+      <div class="hv" style="color:#34D399">35.3%</div>
+      <div class="hs">Exceptional for mining</div>
+    </div>
+    <div class="hstat">
+      <div class="hl">Fair Value (Base)</div>
+      <div class="hv" style="color:#34D399">INR 685</div>
+      <div class="hs">+47% upside</div>
+    </div>
+    <div class="hstat">
+      <div class="hl">Entry Range</div>
+      <div class="hv" style="color:var(--amber)">380–430</div>
+      <div class="hs">Margin of safety</div>
+    </div>
+  </div>
+
+  <div class="verdict-box">
+    Coal India is the world's largest coal miner — a government monopoly with <strong>35% ROCE</strong>, <strong>zero debt</strong>, and a <strong>5.7% dividend yield</strong> at just 9x earnings. The valuation screams cheap. But India's energy transition from coal to renewables is real and accelerating. This is an <strong>income vehicle for 5–7 years</strong>, not a 15-year compounder. Buy at INR 380–430 for the income; hold with a clear exit plan as renewables scale.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 1. BUSINESS OVERVIEW -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">⛏️</div>
+      <div><div class="htitle">Business Overview</div><div class="hsub">What they do and why it's hard to displace</div></div>
+    </div>
+    <div class="card-body">
+      <p>Coal India Limited (CIL) is the <strong>world's largest coal producer</strong>, a Government of India Maharatna PSU. It produces ~700 million tonnes annually across 83 mines operated by 8 subsidiaries. ~80% of offtake goes to thermal power plants at regulated prices; the balance via e-auction at market rates.</p>
+      <p>No private competitor can displace it — it controls India's entire domestic coal supply chain. But India's renewable energy ambitions are the structural long-term risk to this dominance.</p>
+
+      <div class="info-box navy">
+        <strong>Competitive Moat:</strong> Government Monopoly + Irreplaceable National Infrastructure<br><br>
+        Strength: <strong style="color:#34D399">Wide</strong> — but structurally time-limited. The moat is not built on innovation or customer loyalty; it is built on government policy. When that policy changes, the moat erodes with it.
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric navy">
+          <div class="ml">Revenue FY2026</div>
+          <div class="mv">₹1,684B</div>
+          <div class="ms">Flat YoY</div>
+        </div>
+        <div class="metric green">
+          <div class="ml">Gross Margin</div>
+          <div class="mv">89%</div>
+          <div class="ms">FY2026</div>
+        </div>
+        <div class="metric amber">
+          <div class="ml">Operating Margin</div>
+          <div class="mv">18.5%</div>
+          <div class="ms">Down from 32.5% in FY2024</div>
+        </div>
+        <div class="metric navy">
+          <div class="ml">Production Target</div>
+          <div class="mv">810 MT</div>
+          <div class="ms">by FY2028 (5% CAGR)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 2. EARNINGS QUALITY -->
+<!-- ═══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">📊</div>
+      <div><div class="htitle">Earnings Quality</div><div class="hsub">Are the numbers real and repeatable?</div></div>
+    </div>
+    <div class="card-body">
+
+      <div class="chart-title">Revenue Trend (INR Crore)</div>
+      <div class="chart-wrap"><canvas id="revenueChart" height="180"></canvas></div>
+
+      <div class="chart-title">FCF vs Net Income (INR Billion)</div>
+      <div class="chart-wrap"><canvas id="fcfChart" height="180"></canvas></div>
+
+      <h4>FCF / Net Income Ratio</h4>
+      <div class="ratio-row">
+        <div class="ratio-item mid2">
+          <div class="ry">FY2023</div>
+          <div class="rv">0.64x</div>
+        </div>
+        <div class="ratio-item low2">
+          <div class="ry">FY2024</div>
+          <div class="rv">0.03x</div>
+        </div>
+        <div class="ratio-item low2">
+          <div class="ry">FY2025</div>
+          <div class="rv">0.45x</div>
+        </div>
+        <div class="ratio-item high">
+          <div class="ry">FY2026</div>
+          <div class="rv">0.99x</div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--mute);margin-top:8px;">›0.9x = High Quality &nbsp;·&nbsp; 0.6–0.9x = Moderate &nbsp;·&nbsp; ‹0.6x = Red Flag</p>
+
+      <div class="divider"></div>
+
+      <div class="info-box amber">
+        ⚠️ <strong>One-time item FY2026:</strong> INR 1,458 crore court-mandated executive wage provision (arrears Aug 2023–Dec 2025) depressed reported PAT. Underlying earnings are higher. FY2024–25 weak FCF/NI ratios explained by heavy mine development capex — FY2026 shows strong recovery at 0.99x.
+      </div>
+
+      <div class="chart-title" style="margin-top:14px">Margin Trends (%)</div>
+      <div class="chart-wrap"><canvas id="marginChart" height="200"></canvas></div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 3. MANAGEMENT QUALITY -->
+<!-- ═══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">👔</div>
+      <div><div class="htitle">Management Quality</div><div class="hsub">PSU governance + capital allocation</div></div>
+    </div>
+    <div class="card-body">
+
+      <div class="quote-box">
+        <div class="qt">"Production dispatch is expected to reach 810 million tonnes by FY2028. Q4 FY2026 PAT recovered strongly to INR 10,908 crore, and we remain committed to our dividend policy with a final dividend of INR 5.25 per share declared for FY2026."</div>
+        <div class="qs">— Coal India Management, FY2026 Results Commentary</div>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric green">
+          <div class="ml">Promoter (Govt)</div>
+          <div class="mv">63.1%</div>
+          <div class="ms">0% pledged — no stress</div>
+        </div>
+        <div class="metric green">
+          <div class="ml">Dividend Payout</div>
+          <div class="mv">45.1%</div>
+          <div class="ms">INR 15.5/share FY2026</div>
+        </div>
+        <div class="metric amber">
+          <div class="ml">Govt Divestment</div>
+          <div class="mv">₹8,800Cr</div>
+          <div class="ms">Planned — supply overhang</div>
+        </div>
+        <div class="metric green">
+          <div class="ml">ROCE</div>
+          <div class="mv">35.3%</div>
+          <div class="ms">Exceptional for mining</div>
+        </div>
+      </div>
+
+      <div class="info-box navy">
+        <strong>Capital Allocation:</strong> Consistent high dividends every year. 45.1% payout ratio. Self-funds all capex from operating cash flows. Zero M&A risk. Pure income compounder — what you see is what you get.<br><br>
+        <strong>Governance caveat:</strong> As a PSU, management is government-appointed. Decisions on pricing, capacity, and dividends are influenced by ministry policy as much as shareholder value. The government's dual mandate (fiscal revenue + cheap energy) creates an inherent tension.
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 4. BALANCE SHEET -->
+<!-- ═══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">🏦</div>
+      <div><div class="htitle">Balance Sheet Risk</div><div class="hsub">Can this company survive a downturn?</div></div>
+    </div>
+    <div class="card-body">
+
+      <div class="metric-grid">
+        <div class="metric green">
+          <div class="ml">Net Debt / EBITDA</div>
+          <div class="mv">0.1x</div>
+          <div class="ms">Safe zone: &lt;2x ✅</div>
+        </div>
+        <div class="metric green">
+          <div class="ml">Interest Coverage</div>
+          <div class="mv">35.5x</div>
+          <div class="ms">Safe zone: &gt;5x ✅</div>
+        </div>
+        <div class="metric green">
+          <div class="ml">Current Ratio</div>
+          <div class="mv">~1.8x</div>
+          <div class="ms">Safe zone: &gt;1.5x ✅</div>
+        </div>
+        <div class="metric green">
+          <div class="ml">Goodwill / Assets</div>
+          <div class="mv">~0%</div>
+          <div class="ms">No acquisition risk ✅</div>
+        </div>
+      </div>
+
+      <div class="info-box green">
+        <strong>Balance Sheet Verdict: PRISTINE</strong><br>
+        No material near-term debt maturities. Near-zero leverage. Self-funds all capex from operating cash flows. Interest coverage of 35x means the company could see earnings fall 97% and still cover interest. Financial stress is essentially impossible given current structure.
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>Metric</th><th>FY2026</th><th>FY2025</th><th>Safe Zone</th></tr></thead>
+        <tbody>
+          <tr><td>Net Debt/EBITDA</td><td>0.1x</td><td>–0.04x</td><td>&lt;2x</td></tr>
+          <tr><td>Interest Coverage</td><td>35.5x</td><td>54.4x</td><td>&gt;5x</td></tr>
+          <tr><td>Net Cash/(Debt)</td><td>–INR 55B</td><td>+INR 20B</td><td>Positive</td></tr>
+          <tr><td>Total Equity</td><td>INR 1,191B</td><td>INR 991B</td><td>Growing</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 5. KEY RISKS -->
+<!-- ═══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">⚠️</div>
+      <div><div class="htitle">Key Risks</div><div class="hsub">The energy transition is the existential question</div></div>
+    </div>
+    <div class="card-body">
+
+      <div class="risk-item">
+        <div class="risk-header">
+          <div class="risk-title">Energy Transition — Renewable Displacement</div>
+          <div class="risk-badge HIGH">HIGH</div>
+        </div>
+        <div class="risk-desc">India's renewables scaling 15%+ annually. New coal power is already more expensive than firm renewables on a tariff basis. By FY2031, coal tariffs will be ~25% costlier than solar+wind. This is the existential 10-year risk — not if, but when, coal demand peaks.</div>
+      </div>
+
+      <div class="risk-item">
+        <div class="risk-header">
+          <div class="risk-title">Government Divestment / PSU Discount</div>
+          <div class="risk-badge HIGH">HIGH</div>
+        </div>
+        <div class="risk-desc">India plans to sell ~INR 8,800 crore of CIL stake, creating a supply overhang on the stock. As a PSU, CIL also trades at a structural governance discount vs. private peers regardless of how strong the fundamentals are.</div>
+      </div>
+
+      <div class="risk-item">
+        <div class="risk-header">
+          <div class="risk-title">E-Auction Price Compression</div>
+          <div class="risk-badge MEDIUM">MEDIUM</div>
+        </div>
+        <div class="risk-desc">E-auction premiums are compressing as global coal prices soften. Operating margin fell from 32.5% in FY2024 to 18.5% in FY2026. If global prices remain weak, this margin pressure continues.</div>
+      </div>
+
+      <div class="risk-item">
+        <div class="risk-header">
+          <div class="risk-title">Wage & Cost Inflation</div>
+          <div class="risk-badge MEDIUM">MEDIUM</div>
+        </div>
+        <div class="risk-desc">240,000+ employees. Court-mandated FY2026 pay hike added INR 1,458Cr one-time provision. Structural wage inflation is partially outside management control and erodes operating leverage over time.</div>
+      </div>
+
+      <div class="risk-item">
+        <div class="risk-header">
+          <div class="risk-title">Production Volume Shortfalls</div>
+          <div class="risk-badge LOW">LOW</div>
+        </div>
+        <div class="risk-desc">CIL has historically missed production targets. The 810MT FY2028 guidance requires a sustained 5% volume CAGR. If India's power demand disappoints or renewables scale faster than expected, this target could be missed.</div>
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 6. VALUATION -->
+<!-- ═══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">💰</div>
+      <div><div class="htitle">Valuation</div><div class="hsub">Cheap for a reason — but how cheap is too cheap?</div></div>
+    </div>
+    <div class="card-body">
+
+      <div class="chart-title">DCF Implied Price vs Current Price (INR)</div>
+      <div class="chart-wrap"><canvas id="dcfChart" height="200"></canvas></div>
+
+      <div class="dcf-grid">
+        <div class="dcf-card bear">
+          <div class="dcf-top">Bear</div>
+          <div class="dcf-body">
+            <div class="dcf-label">FCF CAGR</div>
+            <div class="dcf-val">–2%</div>
+            <div class="dcf-label">Fair Value</div>
+            <div class="dcf-val">₹388</div>
+            <div class="dcf-label">Upside</div>
+            <div class="dcf-val">–17%</div>
+          </div>
+        </div>
+        <div class="dcf-card base">
+          <div class="dcf-top">Base</div>
+          <div class="dcf-body">
+            <div class="dcf-label">FCF CAGR</div>
+            <div class="dcf-val">+5%</div>
+            <div class="dcf-label">Fair Value</div>
+            <div class="dcf-val">₹685</div>
+            <div class="dcf-label">Upside</div>
+            <div class="dcf-val">+47%</div>
+          </div>
+        </div>
+        <div class="dcf-card bull">
+          <div class="dcf-top">Bull</div>
+          <div class="dcf-body">
+            <div class="dcf-label">FCF CAGR</div>
+            <div class="dcf-val">+10%</div>
+            <div class="dcf-label">Fair Value</div>
+            <div class="dcf-val">₹1,061</div>
+            <div class="dcf-label">Upside</div>
+            <div class="dcf-val">+127%</div>
+          </div>
+        </div>
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>Metric</th><th>Current</th><th>5-Yr Avg</th><th>PSU Avg</th></tr></thead>
+        <tbody>
+          <tr><td>Trailing P/E</td><td>9.2x</td><td>10x</td><td>11x</td></tr>
+          <tr><td>Forward P/E</td><td>8.1x</td><td>—</td><td>—</td></tr>
+          <tr><td>EV/EBITDA</td><td>6.0x</td><td>7x</td><td>8x</td></tr>
+          <tr><td>FCF Yield</td><td>10.7%</td><td>~5%</td><td>—</td></tr>
+          <tr><td>Dividend Yield</td><td>5.7%</td><td>~5%</td><td>~4%</td></tr>
+          <tr><td>ROCE</td><td>35.3%</td><td>~30%</td><td>~20%</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box amber" style="margin-top:12px">
+        ⚡ <strong>Key insight:</strong> Even the bear case (–2% FCF CAGR, slow secular decline) implies only –17% downside from INR 466. The bull and base cases imply substantial upside. This asymmetric risk/reward is attractive for a value investor with a 5–7 year horizon. The stock is not pricing in any growth — it is pricing in decline.
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 7. ANALYST CONSENSUS -->
+<!-- ═══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">🔬</div>
+      <div><div class="htitle">Analyst Consensus</div><div class="hsub">What does the street think?</div></div>
+    </div>
+    <div class="card-body">
+
+      <div class="chart-wrap" style="max-width:280px;margin:0 auto 16px">
+        <canvas id="analystChart" height="220"></canvas>
+      </div>
+
+      <div style="text-align:center;margin-bottom:14px">
+        <span class="pill buy">Strong Buy 12%</span>
+        <span class="pill buy">Buy 27%</span>
+        <span class="pill hold">Hold 35%</span>
+        <span class="pill sell">Sell 12%</span>
+        <span class="pill sell">Strong Sell 14%</span>
+      </div>
+
+      <div class="analyst-grid">
+        <div class="analyst-stat">
+          <div class="as-val" style="color:var(--navy)">26</div>
+          <div class="as-lbl">Analysts covering</div>
+        </div>
+        <div class="analyst-stat">
+          <div class="as-val" style="color:var(--amber)">HOLD</div>
+          <div class="as-lbl">Consensus rating</div>
+        </div>
+        <div class="analyst-stat">
+          <div class="as-val" style="color:var(--green)">₹550</div>
+          <div class="as-lbl">High target</div>
+        </div>
+        <div class="analyst-stat">
+          <div class="as-val" style="color:var(--amber)">₹452</div>
+          <div class="as-lbl">Mean target (–3%)</div>
+        </div>
+      </div>
+
+      <div class="info-box amber" style="margin-top:14px">
+        The analyst community is split — 39% bullish, 35% hold, 27% bearish. The mean target of INR 452 implies the stock is <strong>slightly overvalued at INR 466</strong> by street consensus. The disagreement reflects genuine uncertainty about the energy transition timeline.
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 8. FINAL VERDICT -->
+<!-- ═══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header" style="background:var(--amber)">
+      <div class="icon" style="background:rgba(0,0,0,0.15)">✅</div>
+      <div><div class="htitle">Final Verdict & Checklist</div><div class="hsub">Before you invest</div></div>
+    </div>
+    <div class="card-body">
+
+      <ul class="checklist">
+        <li>
+          <div class="ci">✅</div>
+          <div class="ct"><strong>Earnings quality improving</strong> — FCF/NI recovered to 0.99x in FY2026 after 2 weak years. MEDIUM overall given inconsistency.</div>
+        </li>
+        <li>
+          <div class="ci">✅</div>
+          <div class="ct"><strong>Zero promoter pledging</strong> — Government holds 63.1% with no financial stress signals.</div>
+        </li>
+        <li>
+          <div class="ci">✅</div>
+          <div class="ct"><strong>Balance sheet pristine</strong> — 0.1x Net Debt/EBITDA, 35x interest coverage. Cannot go bankrupt.</div>
+        </li>
+        <li>
+          <div class="ci">✅</div>
+          <div class="ct"><strong>ROCE 35.3%</strong> — Consistently above 15% threshold for 10+ years. Durable return on capital.</div>
+        </li>
+        <li>
+          <div class="ci">⚠️</div>
+          <div class="ct"><strong>Valuation at INR 466</strong> — Marginally above street consensus (INR 452). Limited margin of safety. Wait for dip to INR 380–430.</div>
+        </li>
+        <li>
+          <div class="ci">⚠️</div>
+          <div class="ct"><strong>Exit plan required</strong> — This is a 5–7 year hold. Exit as India's renewable mix approaches 60% of power generation or if volumes decline 2+ consecutive years.</div>
+        </li>
+      </ul>
+
+      <div class="divider"></div>
+
+      <div class="info-box navy">
+        <strong style="color:#34D399; font-size:15px">VERDICT: WATCH</strong><br><br>
+        Coal India is a <strong>fantastic income vehicle for the next 5–7 years</strong>. It is not a 15-year compounder. The business will likely peak in FY2028–30 and face secular volume decline thereafter as India's renewable capacity scales.<br><br>
+        <strong>For income investors:</strong> The 5.7% yield, zero debt, and government backing make this a bond-like instrument with equity upside. At INR 380–430, it is an excellent income buy.<br><br>
+        <strong>Target entry:</strong> INR 380–430 &nbsp;·&nbsp; <strong>Hold period:</strong> 5–7 years &nbsp;·&nbsp; <strong>Annual yield on cost at entry:</strong> ~6.5%
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .section -->
+
+<div class="footer">
+  Sources: Yahoo Finance · Screener.in · Investywise · Reuters · IEA Coal 2025 · Trendlyne<br>
+  Analysis date: May 12, 2026 · Not investment advice · For research purposes only
+</div>
+
+<!-- CHARTS -->
+<script>
+const NAVY='#1C2B5E', BLUE='#2D5BE3', AMBER='#D97706', GREEN='#059669', RED='#DC2626', MUTE='#64748B', LGRAY='#E2E8F0', ICE='#D6E4FF';
+
+const defOpts = {
+  plugins:{ legend:{ labels:{ font:{size:11}, color:NAVY } } },
+  scales:{
+    x:{ ticks:{color:MUTE, font:{size:10}}, grid:{color:LGRAY} },
+    y:{ ticks:{color:MUTE, font:{size:10}}, grid:{color:LGRAY} }
+  }
+};
+
+// Revenue
+new Chart(document.getElementById('revenueChart'), {
+  type:'bar',
+  data:{
+    labels:['FY2023','FY2024','FY2025','FY2026'],
+    datasets:[{
+      label:'Revenue (INR Crore)',
+      data:[127430,127070,169180,168400],
+      backgroundColor:[ICE,ICE,BLUE,BLUE],
+      borderColor:[NAVY,NAVY,NAVY,NAVY], borderWidth:1, borderRadius:4
+    }]
+  },
+  options:{...defOpts, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>`INR ${c.parsed.y.toLocaleString()} Cr`}}},
+    scales:{x:{ticks:{color:MUTE,font:{size:11}},grid:{display:false}}, y:{ticks:{color:MUTE,font:{size:10},callback:v=>`${(v/1000).toFixed(0)}K`},grid:{color:LGRAY}}}}
+});
+
+// FCF vs NI
+new Chart(document.getElementById('fcfChart'), {
+  type:'bar',
+  data:{
+    labels:['FY2023','FY2024','FY2025','FY2026'],
+    datasets:[
+      {label:'Free Cash Flow',data:[204,13,159,307],backgroundColor:BLUE,borderRadius:4},
+      {label:'Net Income',    data:[318,374,355,311],backgroundColor:ICE,borderColor:BLUE,borderWidth:1,borderRadius:4}
+    ]
+  },
+  options:{...defOpts, plugins:{legend:{labels:{font:{size:11},color:NAVY}}, tooltip:{callbacks:{label:c=>`INR ${c.parsed.y}B`}}},
+    scales:{x:{ticks:{color:MUTE,font:{size:11}},grid:{display:false}}, y:{ticks:{color:MUTE,font:{size:10},callback:v=>`${v}B`},grid:{color:LGRAY}}}}
+});
+
+// Margins
+new Chart(document.getElementById('marginChart'), {
+  type:'line',
+  data:{
+    labels:['FY2023','FY2024','FY2025','FY2026'],
+    datasets:[
+      {label:'Gross Margin',    data:[82,84.5,89.3,89.0],  borderColor:BLUE,  backgroundColor:'rgba(45,91,227,0.08)', tension:0.4, pointRadius:5, fill:false},
+      {label:'Operating Margin',data:[29.6,32.5,22.5,18.5],borderColor:NAVY,  backgroundColor:'transparent', tension:0.4, pointRadius:5, fill:false},
+      {label:'Net Margin',      data:[24.9,29.4,21.0,18.5],borderColor:AMBER, backgroundColor:'transparent', tension:0.4, pointRadius:5, fill:false}
+    ]
+  },
+  options:{...defOpts, plugins:{legend:{labels:{font:{size:11},color:NAVY}}, tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}%`}}},
+    scales:{x:{ticks:{color:MUTE,font:{size:11}},grid:{display:false}}, y:{min:0,max:100,ticks:{color:MUTE,font:{size:10},callback:v=>`${v}%`},grid:{color:LGRAY}}}}
+});
+
+// DCF
+new Chart(document.getElementById('dcfChart'), {
+  type:'bar',
+  data:{
+    labels:['Bear\n(–2% CAGR)','Base\n(+5% CAGR)','Bull\n(+10% CAGR)'],
+    datasets:[
+      {label:'Implied Fair Value',data:[388,685,1061],backgroundColor:[RED,AMBER,GREEN],borderRadius:6},
+      {label:'Current Price',     data:[466,466,466], backgroundColor:'rgba(28,43,94,0.12)', borderColor:NAVY, borderWidth:2, borderRadius:6}
+    ]
+  },
+  options:{
+    plugins:{legend:{labels:{font:{size:11},color:NAVY}}, tooltip:{callbacks:{label:c=>`INR ${c.parsed.y}`}}},
+    scales:{x:{ticks:{color:MUTE,font:{size:10}},grid:{display:false}}, y:{ticks:{color:MUTE,font:{size:10},callback:v=>`₹${v}`},grid:{color:LGRAY}}}
+  }
+});
+
+// Analyst donut
+new Chart(document.getElementById('analystChart'), {
+  type:'doughnut',
+  data:{
+    labels:['Strong Buy','Buy','Hold','Sell','Strong Sell'],
+    data:[12,27,35,12,14],
+    datasets:[{data:[12,27,35,12,14], backgroundColor:[GREEN,'#34D399',AMBER,'#F87171',RED], borderWidth:2, borderColor:'#fff', hoverOffset:6}]
+  },
+  options:{
+    cutout:'58%',
+    plugins:{legend:{position:'bottom',labels:{font:{size:11},color:NAVY,padding:10}},
+      tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed}%`}}},
+  }
+});
+</script>
+
+</body>
+</html>
