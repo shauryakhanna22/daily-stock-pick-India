@@ -2,7 +2,7 @@
 
 **AI-powered equity research — NSE & BSE — updated every morning at 8am IST**
 
-A daily shortlist of 10 undervalued stocks ranked by growth, quality, and valuation.
+A daily shortlist of 10 undervalued Indian stocks ranked by growth, quality, and valuation.
 
 ---
 
@@ -17,6 +17,7 @@ A daily shortlist of 10 undervalued stocks ranked by growth, quality, and valuat
 
 | Date | Link |
 |------|------|
+| 2026-05-12 | [View picks](picks/2026-05-12.md) |
 | 2026-05-11 | [View picks](picks/2026-05-11.md) |
 
 ---
