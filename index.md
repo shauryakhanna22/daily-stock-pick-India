@@ -10,6 +10,7 @@ A daily shortlist of 10 undervalued Indian stocks ranked by growth, quality, val
 
 | Date | Link |
 |------|------|
+| 2026-05-15 | [View picks](picks/2026-05-15.md) |
 | 2026-05-14 | [View picks](picks/2026-05-14.md) |
 | 2026-05-12 | [View picks](picks/2026-05-12.md) |
 | 2026-05-11 | [View picks](picks/2026-05-11.md) |
